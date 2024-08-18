@@ -12,7 +12,8 @@ const AZURE_EMAIL_CONNECTION_STRING = process.env.AZURE_EMAIL_CONNECTION_STRING;
 app.timer('EnvVariableLogger', {
     schedule: '*/15 * * * * *',  // Every 15 seconds
     handler: async (myTimer, context) => {
-    context.log("Starting")
+    context.log('Logging environment variables:');
+        
     let client;
         try{
         client = new MongoClient(MONGODB_URI);
@@ -20,9 +21,9 @@ app.timer('EnvVariableLogger', {
             
             const db = client.db(DATABASE_NAME);
             const collection = db.collection(COLLECTION_NAME);
-            context.log("Connected to DATABASE")
+        context.log('Connected to DB');
         } catch(error) {
-            context.log(error)
+        context.log('Ran into an Error');
         }
     }
 });
