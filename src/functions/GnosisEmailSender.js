@@ -1,4 +1,6 @@
 const { app } = require('@azure/functions');
+const { EmailClient, KnownEmailSendStatus } = require('@azure/communication-email');
+const { MongoClient } = require('mongodb');
 
 // Ensure these are correctly set in your environment
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -8,12 +10,18 @@ const AZURE_EMAIL_CONNECTION_STRING = process.env.AZURE_EMAIL_CONNECTION_STRING;
 
 // Run every 15 seconds
 app.timer('EnvVariableLogger', {
-    schedule: '0 0 0 * * *',  // Every 15 seconds
+    schedule: '*/30 * * * * *',  // Every 15 seconds
     handler: async (myTimer, context) => {
-        context.log('Logging environment variables:');
-        context.log(`MONGODB_URI: ${MONGODB_URI}`);
-        context.log(`DATABASE_NAME: ${DATABASE_NAME}`);
-        context.log(`COLLECTION_NAME: ${COLLECTION_NAME}`);
-        context.log(`AZURE_EMAIL_CONNECTION_STRING: ${AZURE_EMAIL_CONNECTION_STRING}`);
+    let client;
+        try{
+        client = new MongoClient(MONGODB_URI);
+            await client.connect();
+            
+            const db = client.db(DATABASE_NAME);
+            const collection = db.collection(COLLECTION_NAME);
+            console.log("Connected to DATABASE")
+        } catch(error) {
+            console.log(error)
+        }
     }
 });
