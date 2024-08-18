@@ -1,4 +1,6 @@
 const { app } = require('@azure/functions');
+const { EmailClient, KnownEmailSendStatus } = require('@azure/communication-email');
+const { MongoClient } = require('mongodb');
 
 // Ensure these are correctly set in your environment
 const MONGODB_URI = process.env.MONGODB_URI;
