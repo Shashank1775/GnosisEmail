@@ -1,5 +1,5 @@
 const { app } = require('@azure/functions');
-const { EmailClient, KnownEmailSendStatus } = require('@azure/communication-email');
+//const { EmailClient, KnownEmailSendStatus } = require('@azure/communication-email');
 //const { MongoClient } = require('mongodb');
 
 // Ensure these are correctly set in your environment
