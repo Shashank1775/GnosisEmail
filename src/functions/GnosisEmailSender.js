@@ -10,8 +10,9 @@ const AZURE_EMAIL_CONNECTION_STRING = process.env.AZURE_EMAIL_CONNECTION_STRING;
 
 // Run every 15 seconds
 app.timer('EnvVariableLogger', {
-    schedule: '*/30 * * * * *',  // Every 15 seconds
+    schedule: '*/15 * * * * *',  // Every 15 seconds
     handler: async (myTimer, context) => {
+    console.log("Starting")
     let client;
         try{
         client = new MongoClient(MONGODB_URI);
