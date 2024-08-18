@@ -11,7 +11,7 @@ const AZURE_EMAIL_CONNECTION_STRING = process.env.AZURE_EMAIL_CONNECTION_STRING;
 const POLLER_WAIT_TIME = 10;  // Polling interval in seconds
 
 app.timer('GnosisEmailSender', {
-    schedule: '0 0 0 * * *',  // Every 5 minutes
+    schedule: '0 0 0 * * *',  // Every day at midnight
     handler: async (myTimer, context) => {
         if (!MONGODB_URI || !DATABASE_NAME || !COLLECTION_NAME || !AZURE_EMAIL_CONNECTION_STRING) {
             context.log.error('Missing one or more required environment variables.');
@@ -21,17 +21,17 @@ app.timer('GnosisEmailSender', {
         let client;
         try {
             // Initialize MongoDB client
-            client = new MongoClient(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+            client = new MongoClient(MONGODB_URI);
             await client.connect();
             
             const db = client.db(DATABASE_NAME);
             const collection = db.collection(COLLECTION_NAME);
 
-            // Fetch the users and their reminders from the database
-            const users = await collection.find().toArray();
+            // Fetch the users and their reminders where `sent` is false
+            const users = await collection.find({ "reminders.sent": false }).toArray();
 
             if (users.length === 0) {
-                context.log('No users found in the database.');
+                context.log('No users with unsent reminders found in the database.');
                 return;
             }
 
@@ -46,7 +46,10 @@ app.timer('GnosisEmailSender', {
                     continue;
                 }
 
-                for (const reminder of reminders) {
+                // Filter reminders where `sent` is false
+                const unsentReminders = reminders.filter(reminder => !reminder.sent);
+
+                for (const reminder of unsentReminders) {
                     const message = {
                         senderAddress: "DoNotReply@6f4532a3-aa21-46f6-974a-1eebdb8e1e22.azurecomm.net",
                         content: {
@@ -83,6 +86,12 @@ app.timer('GnosisEmailSender', {
                         const result = poller.getResult();
                         if (result.status === KnownEmailSendStatus.Succeeded) {
                             context.log(`Email sent successfully to ${userEmail}, operationId: ${result.id}`);
+                            
+                            // Update the reminder as sent
+                            await collection.updateOne(
+                                { _id: user._id, "reminders.id": reminder.id },
+                                { $set: { "reminders.$.sent": true } }
+                            );
                         } else {
                             context.log.error(`Failed to send email to ${userEmail}: ${result.error}`);
                         }
