@@ -8,7 +8,7 @@ const AZURE_EMAIL_CONNECTION_STRING = process.env.AZURE_EMAIL_CONNECTION_STRING;
 
 // Run every 15 seconds
 app.timer('EnvVariableLogger', {
-    schedule: '*/15 * * * * *',  // Every 15 seconds
+    schedule: '0 0 0 * * *',  // Every 15 seconds
     handler: async (myTimer, context) => {
         context.log('Logging environment variables:');
         context.log(`MONGODB_URI: ${MONGODB_URI}`);
